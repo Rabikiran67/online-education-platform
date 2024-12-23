@@ -1,24 +1,43 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-require("dotenv").config();
+const express = require('express');
+const session = require('express-session');
+const cors = require('cors'); // Enable CORS
+const dotenv = require('dotenv');
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
+const courseRoutes = require('./routes/courseRoutes');
 
-const authRoutes = require("./routes/authRoutes");
+// Load environment variables from .env file
+dotenv.config();
+
+
+// Connect to the database
+connectDB();
 
 const app = express();
 
-// Middleware
+// Enable CORS
+app.use(cors({
+  origin: 'http://localhost:3000', // Allow frontend to communicate with backend
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+}));
+
+// Middleware for parsing JSON request bodies
 app.use(express.json());
-app.use(cors());
+
+// Use session middleware (if needed for managing user sessions)
+app.use(session({
+  secret: 'your-session-secret', // Secret to sign the session ID cookie
+  resave: false, // Don't resave session if unmodified
+  saveUninitialized: true, // Save session even if not modified
+  cookie: { secure: false }, // Set to true if using HTTPS (for production)
+}));
 
 // Routes
-app.use("/auth", authRoutes);
+app.use('/api/auth', authRoutes); // Auth routes (signup, login, google OAuth)
+app.use('/api/courses', courseRoutes); // Courses routes
 
-// Connect to MongoDB and start the server
 const PORT = process.env.PORT || 5000;
-mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch((err) => console.error("Failed to connect to MongoDB", err));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

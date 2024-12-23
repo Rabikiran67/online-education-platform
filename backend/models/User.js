@@ -1,18 +1,13 @@
+// models/User.js
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const Schema = mongoose.Schema;
 
-const UserSchema = new mongoose.Schema({
-    username: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now },
+const userSchema = new Schema({
+  googleId: { type: String, unique: true, required: false },
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: function() { return !this.googleId; } }, // password is required only if googleId is not present
 });
 
-// Hash the password before saving
-UserSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next();
-    this.password = await bcrypt.hash(this.password, 10);
-    next();
-});
-
-module.exports = mongoose.model('User', UserSchema);
+const User = mongoose.model('User', userSchema);
+module.exports = User;

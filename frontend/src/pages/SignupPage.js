@@ -1,53 +1,50 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography } from '@mui/material';
+import { TextField, Button, Box, Typography, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { signup, googleLogin, facebookLogin } from '../services/authService';  // Import signup and social login functions
+import { useAuth } from '../contexts/AuthContext'; // Import useAuth to get access to context
 
 const SignupPage = () => {
   const navigate = useNavigate();
+  const { handleSignup, loading: contextLoading } = useAuth(); // Use handleSignup from context
+  const [name, setName] = useState(''); // Add name field for signup
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); // Local loading state
 
-  const handleSignup = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start loading
+    setError(''); // Clear any previous error
     try {
-      await signup(email, password);
+      await handleSignup(name, email, password); // Use handleSignup from AuthContext
       navigate('/courses'); // Redirect to courses after successful signup
     } catch (error) {
       setError('Signup failed: ' + error.message); // Handle error
-    }
-  };
-
-  const handleGoogleSignup = async () => {
-    try {
-      const user = await googleLogin();
-      navigate('/courses');
-      alert(`Welcome ${user?.displayName || "User"}!`);
-    } catch (error) {
-      setError('Google login failed: ' + error.message); // Handle Google login error
-    }
-  };
-
-  const handleFacebookSignup = async () => {
-    try {
-      const user = await facebookLogin();
-      navigate('/courses');
-      alert(`Welcome ${user.displayName}!`);
-    } catch (error) {
-      setError('Facebook login failed: ' + error.message); // Handle Facebook login error
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
   return (
     <Box sx={{ maxWidth: 400, margin: '0 auto', mt: 5 }}>
-      <Typography variant="h5" gutterBottom>Signup</Typography>
+      <Typography variant="h5" gutterBottom>
+        Signup
+      </Typography>
       {error && (
         <Typography variant="body2" color="error" sx={{ mb: 2 }}>
           {error}
         </Typography>
       )}
-      <form onSubmit={handleSignup}>
+      <form onSubmit={handleSubmit}>
+        <TextField
+          label="Name"
+          variant="outlined"
+          fullWidth
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          sx={{ mb: 2 }}
+        />
         <TextField
           label="Email"
           variant="outlined"
@@ -65,35 +62,15 @@ const SignupPage = () => {
           onChange={(e) => setPassword(e.target.value)}
           sx={{ mb: 2 }}
         />
-        <Button variant="contained" type="submit" fullWidth>
-          Signup
+        <Button 
+          variant="contained" 
+          type="submit" 
+          fullWidth 
+          disabled={loading || contextLoading} // Disable the button while loading
+        >
+          {loading || contextLoading ? <CircularProgress size={24} color="inherit" /> : 'Signup'}
         </Button>
       </form>
-
-      {/* Social login buttons */}
-      <Box sx={{ mt: 3 }}>
-        <Typography variant="subtitle1" gutterBottom>
-          Or sign up using:
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="outlined"
-            onClick={handleGoogleSignup}
-            color="error"
-            sx={{ flexGrow: 1 }}
-          >
-            Google
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={handleFacebookSignup}
-            color="primary"
-            sx={{ flexGrow: 1 }}
-          >
-            Facebook
-          </Button>
-        </Box>
-      </Box>
     </Box>
   );
 };

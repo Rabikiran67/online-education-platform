@@ -1,23 +1,23 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext"; // AuthProvider is now directly outside Router
 import Navbar from "./components/Navbar";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
-import CoursesListPage from "./pages/CoursesListPage"; // Fixed naming for consistency
-import CoursePage from "./pages/CoursesPage"; // Consistent naming for course page
+import CoursesListPage from "./pages/CoursesListPage";
+import CoursePage from "./pages/CoursesPage";
 import CourseCreationPage from "./pages/CourseCreationPage";
 import ProgressTracker from "./pages/ProgressTracker";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ViewCoursePage from "./pages/ViewCoursePage";
-import LearningMaterialPage from "./pages/LearningMaterialPage"; // Added the learning materials page
+import LearningMaterialPage from "./pages/LearningMaterialPage";
 
 const App = () => {
   return (
     <AuthProvider>
-      <Router>
-        <Navbar /> {/* Navbar added at the top */}
+      <Router> {/* Router should be inside AuthProvider */}
+        <Navbar /> {/* Navbar added inside Router */}
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -64,7 +64,6 @@ const App = () => {
             }
           />
         </Routes>
-        {/* <Footer /> Footer added at the bottom */}
       </Router>
     </AuthProvider>
   );
