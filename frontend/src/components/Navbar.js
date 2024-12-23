@@ -1,61 +1,53 @@
 import React from "react";
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../services/firebase"; // Assuming auth is already configured in firebase
+import { useAuth } from "../contexts/AuthContext";
+
+
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const user = auth.currentUser; // Get current user info from Firebase
+  const { user, loading, handleLogout, handleGoogleLogin } = useAuth();
 
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      alert("Logged out successfully!");
-      navigate("/"); // Redirect to homepage after logout
-    } catch (error) {
-      alert("Error logging out: " + error.message);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // Function to handle Google login response
+  const responseGoogle = (response) => {
+    if (response.tokenId) {
+      handleGoogleLogin(response.tokenId); // Call Google login function
+    } else {
+      console.error("Google login failed");
     }
   };
 
   return (
     <AppBar position="static" color="primary">
       <Toolbar>
-        {/* Logo or Title */}
         <Typography
           variant="h6"
           component={Link}
           to="/"
-          sx={{
-            flexGrow: 1,
-            textDecoration: "none",
-            color: "inherit",
-            fontWeight: "bold",
-          }}
+          sx={{ flexGrow: 1, textDecoration: "none", color: "inherit", fontWeight: "bold" }}
         >
           Online Learning Platform
         </Typography>
 
-        {/* Conditional rendering based on user authentication */}
+        {/* Conditional Rendering Based on Login Status */}
         {!user ? (
+          // User is not logged in
           <>
-            <Button color="inherit" component={Link} to="/login">
-              Login
-            </Button>
-            <Button color="inherit" component={Link} to="/signup">
-              Signup
-            </Button>
+            <Button color="inherit" component={Link} to="/login">Login</Button>
+            <Button color="inherit" component={Link} to="/signup">Signup</Button>
+         
           </>
         ) : (
+          // User is logged in
           <>
-            <Button color="inherit" component={Link} to="/courses">
-              Courses
-            </Button>
-            <Button color="inherit" onClick={handleLogout}>
-              Logout
-            </Button>
-            <Button color="inherit" component={Link} to="/create-course">
-              Create Course
-            </Button>
+            <Button color="inherit" component={Link} to="/courses">Courses</Button>
+            <Button color="inherit" onClick={handleLogout}>Logout</Button>
+            <Button color="inherit" component={Link} to="/create-course">Create Course</Button>
           </>
         )}
       </Toolbar>
